@@ -1,0 +1,201 @@
+[33mcommit 86cc674a074e0936bcc5033fe5c0a6e454b509d4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Merge: 24d9ae1 a9eb997
+Author: s1f10250219 <s1f102502193@iniad.org>
+Date:   Wed Jul 8 09:49:10 2026 +0900
+
+    Merge pull request #6 from s1f10250219/feature/#4-add-delete-function
+    
+    削除機能を追加
+
+[33mcommit a9eb9973705ba72fc7d86af0d1c21f07444c05e4[m[33m ([m[1;31morigin/feature/#4-add-delete-function[m[33m)[m
+Merge: 709c60a 24d9ae1
+Author: s1f10250219 <s1f102502193@iniad.org>
+Date:   Wed Jul 8 09:45:27 2026 +0900
+
+    Merge branch 'main' into feature/#4-add-delete-function
+
+[33mcommit 24d9ae138f8d718c6f50fce2ce5729c3f869cdfb[m
+Merge: c8c2409 eeddf96
+Author: s1f10250219 <s1f102502193@iniad.org>
+Date:   Wed Jul 8 09:29:07 2026 +0900
+
+    Merge pull request #5 from s1f10250219/feature/#3-add-update-function
+    
+    更新機能を追加
+
+[33mcommit 709c60a4a791fa5e812b3c7249c9424cb720650d[m
+Author: 1F10240207 <s1f102402079@iniad.org>
+Date:   Thu Jul 2 14:17:36 2026 +0900
+
+    削除機能を追加
+
+M	config/urls.py
+M	todo/templates/todo/detail.html
+M	todo/views.py
+
+[33mcommit eeddf960db912966a2739d05cef2ae49d90bd5fb[m[33m ([m[1;31morigin/feature/#3-add-update-function[m[33m)[m
+Author: 1F10250048 <s1F102500483@iniad.org>
+Date:   Thu Jul 2 14:10:17 2026 +0900
+
+    更新機能を追加
+
+M	config/urls.py
+M	todo/templates/todo/detail.html
+A	todo/templates/todo/edit.html
+M	todo/views.py
+
+[33mcommit c8c24092ba2b3733f1a0cc49fcb429585f004ee8[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jul 2 13:52:13 2026 +0900
+
+    Add Render deployment settings
+
+A	build.sh
+A	config/production.py
+A	render.yaml
+M	requirements.txt
+
+[33mcommit 87a27772e2eaa5143e6cc4e31b1da3f24aa81a7c[m
+Merge: 20c0762 478863d
+Author: s1f10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 14:24:43 2026 +0900
+
+    Merge pull request #2 from s1f10250219/feature/#1-add-detail-page
+    
+    Feature/#1 add detail page
+
+[33mcommit 478863de36d0011f51777ead02002ca797678551[m[33m ([m[1;31morigin/feature/#1-add-detail-page[m[33m, [m[1;32mfeature/#1-add-detail-page[m[33m)[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 14:21:55 2026 +0900
+
+    詳細ページのテストを追加
+
+M	todo/tests.py
+
+[33mcommit 05daecb7265f8ef1b845b8b23da2d7e8f5616f5a[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 14:18:44 2026 +0900
+
+    詳細ページを追加
+
+M	config/urls.py
+A	todo/templates/todo/detail.html
+M	todo/templates/todo/index.html
+M	todo/views.py
+
+[33mcommit 20c07623ee42c01c87d6aaf17b125dd6206821bb[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 13:48:51 2026 +0900
+
+    コードの整形
+
+M	todo/models.py
+M	todo/tests.py
+M	todo/views.py
+
+[33mcommit 98dbea6b06bdb78101ec3bf1e8c6d5790eaf8143[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 13:36:00 2026 +0900
+
+    Fix tasks overwrite bug
+
+M	todo/views.py
+
+[33mcommit b7029328d48bd0a872869ac09203b627fe54b669[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 13:30:08 2026 +0900
+
+    requirements.txt 追加
+
+A	requirements.txt
+
+[33mcommit a0ef041b60b448e4315e9a2510a8345fb06a63c2[m
+Author: s1f10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 25 13:26:01 2026 +0900
+
+    Create django.yml
+
+A	.github/workflows/django.yml
+
+[33mcommit f6b7bd0a376da59ae8954e8da9dfa154a9365e7e[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 14:17:51 2026 +0900
+
+    ソート機能を追加
+
+M	todo/tests.py
+M	todo/views.py
+
+[33mcommit 1a1bb8234fa507bdd49027805593d926a413b5c1[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 14:11:36 2026 +0900
+
+    テストを追加
+
+M	todo/tests.py
+
+[33mcommit 47b0603470e1fb9a067900c96c6eaa063cc6465c[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 14:04:03 2026 +0900
+
+    トップページを追加
+
+M	config/urls.py
+A	todo/templates/todo/index.html
+M	todo/views.py
+
+[33mcommit b46ad303b173404b66c3cc68b3244d10413eeddd[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 13:54:40 2026 +0900
+
+    Taskモデルにメソッドを追加
+
+M	todo/models.py
+M	todo/tests.py
+
+[33mcommit f9885d8a9663f8ae8fe4a2c6ea6efa82bc6bc5e3[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 13:46:10 2026 +0900
+
+    Taskモデルを追加
+
+A	todo/migrations/0001_initial.py
+M	todo/models.py
+M	todo/tests.py
+
+[33mcommit 55c6888f0077db994528630c372310c31effcffa[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 13:33:49 2026 +0900
+
+    テストのサンプルを追加
+
+M	todo/tests.py
+
+[33mcommit e806fbb691ac7521351485d5f33eafd38af22707[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 13:29:52 2026 +0900
+
+    todoアプリケーション追加
+
+M	config/settings.py
+A	todo/__init__.py
+A	todo/admin.py
+A	todo/apps.py
+A	todo/migrations/__init__.py
+A	todo/models.py
+A	todo/tests.py
+A	todo/views.py
+
+[33mcommit 275202bea8e9ce3b05598e40ee81f3e1935c07ea[m
+Author: 1F10250219 <s1f102502193@iniad.org>
+Date:   Thu Jun 18 13:26:21 2026 +0900
+
+    Initial commit
+
+A	.gitignore
+A	config/__init__.py
+A	config/asgi.py
+A	config/settings.py
+A	config/urls.py
+A	config/wsgi.py
+A	manage.py
