@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.utils import timezone
 from datetime import datetime
-from todo.models import Task
+from todo.models import Category, Task
 
 
 # Create your tests here.
@@ -54,6 +54,18 @@ class TaskModelTestCase(TestCase):
 
         self.assertFalse(task.is_overdue(current))
 
+    def test_create_task_with_categories(self):
+        work = Category.objects.create(name="work")
+        study = Category.objects.create(name="study")
+        task = Task(title="task3")
+        task.save()
+        task.categories.add(work, study)
+
+        task.refresh_from_db()
+        self.assertEqual(task.categories.count(), 2)
+        self.assertTrue(task.categories.filter(name="work").exists())
+        self.assertTrue(task.categories.filter(name="study").exists())
+
 
 class TodoViewTestCase(TestCase):
     def test_index_get(self):
@@ -98,7 +110,6 @@ class TodoViewTestCase(TestCase):
         self.assertEqual(response.templates[0].name, "todo/index.html")
         self.assertEqual(response.context["tasks"][0], task1)
         self.assertEqual(response.context["tasks"][1], task2)
-
     def test_detail_get_success(self):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
