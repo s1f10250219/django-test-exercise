@@ -23,14 +23,48 @@
         <input id="dueInput" name="due_at" type="datetime-local">
       </div>
       <div>
+        <label for="priorityInput">Priority</label><br>
+        <select id="priorityInput" name="priority">
+          <option value="high">高</option>
+          <option value="medium" selected>中</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+      <div>
+        <label for="descriptionInput">Description</label><br>
+        <textarea id="descriptionInput" name="description" placeholder="Enter description or memo"></textarea>
+      </div>
+      <div>
+        <label for="categoryInput">Categories</label><br>
+        <select id="categoryInput" name="categories" multiple size="4">
+          {% for category in categories %}
+          <option value="{{ category.name }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">複数選択できます</div>
+      </div>
+      <div>
         <button type="submit">Submit</button>
       </div>
     </form>
     <br>
 
-    <div>
-      <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
-      <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+    <div class="filter-bar">
+      <form method="get" action="{% url 'index' %}" class="filter-form">
+        <label for="categoryFilter">Filter by category</label>
+        <select id="categoryFilter" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+          <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+      </form>
+      <div>
+        <a href="{% url 'index' %}?order=priority">Sort by Priority</a> |
+        <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
+        <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+      </div>
     </div>
 
     {% for task in tasks %}
@@ -40,6 +74,17 @@
         <li>Posted at: {{ task.posted_at }}</li>
         {% if task.due_at %} 
         <li>Due at: {{ task.due_at }}</li>
+        {% endif %}
+        <li>Priority: {{ task.get_priority_display }}</li>
+        {% if task.categories.all %}
+        <li>Categories:
+          {% for category in task.categories.all %}
+          <span class="tag">{{ category.name }}</span>
+          {% endfor %}
+        </li>
+        {% endif %}
+        {% if task.description %}
+        <li>Description: <span class="desc-preview">{{ task.description|truncatewords:15 }}</span></li>
         {% endif %}
         {% if task.completed %} 
         <li>Status: Completed</li>
