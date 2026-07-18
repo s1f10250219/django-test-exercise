@@ -16,6 +16,14 @@
       {% if task.due_at %}
       <li>Due at: {{ task.due_at }}</li>
       {% endif %}
+      <li>Priority: {{ task.get_priority_display }}</li>
+      {% if task.categories.all %}
+      <li>Categories:
+        {% for category in task.categories.all %}
+        <span class="tag">{{ category.name }}</span>
+        {% endfor %}
+      </li>
+      {% endif %}
       {% if task.completed %}
       <li>Status: Completed</li>
       {% else %}

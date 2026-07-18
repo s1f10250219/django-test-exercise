@@ -23,6 +23,23 @@
         <input id="dueInput" name="due_at" type="datetime-local" value="{{ task.due_at |date:"Y-m-d H:i" }}">
       </div>
       <div>
+        <label for="priorityInput">Priority</label><br>
+        <select id="priorityInput" name="priority">
+          <option value="high" {% if task.priority == 'high' %}selected{% endif %}>高</option>
+          <option value="medium" {% if task.priority == 'medium' %}selected{% endif %}>中</option>
+          <option value="low" {% if task.priority == 'low' %}selected{% endif %}>低</option>
+        </select>
+      </div>
+      <div>
+        <label for="categoryInput">Categories</label><br>
+        <select id="categoryInput" name="categories" multiple size="4">
+          {% for category in categories %}
+          <option value="{{ category.name }}" {% if category.name in selected_categories %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">複数選択できます</div>
+      </div>
+      <div>
         <button type="submit">Submit</button>
       </div>
     </form>
