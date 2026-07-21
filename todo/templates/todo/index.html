@@ -19,6 +19,10 @@
         <input id="titleInput" name="title" type="text" placeholder="Input title">
       </div>
       <div>
+        <label for="categoryInput">Category</label><br>
+        <input id="categoryInput" name="category" type="text" placeholder="Input category">
+      </div>
+      <div>
         <label for="dueInput">Due at:</label><br>
         <input id="dueInput" name="due_at" type="datetime-local">
       </div>
@@ -28,9 +32,16 @@
     </form>
     <br>
 
+    <form action="{% url 'index' %}" method="get">
+      <label for="searchInput">Search</label><br>
+      <input id="searchInput" name="q" type="text" value="{{ query }}" placeholder="Search by title or category">
+      <button type="submit">Search</button>
+    </form>
+    <br>
+
     <div>
-      <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
-      <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+      <a href="{% url 'index' %}?order=due{% if query %}&q={{ query }}{% endif %}">Sort by Due Date</a> |
+      <a href="{% url 'index' %}?order=post{% if query %}&q={{ query }}{% endif %}">Sort by Posted Date</a>
     </div>
 
     {% for task in tasks %}
@@ -38,6 +49,9 @@
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
       <ul>
         <li>Posted at: {{ task.posted_at }}</li>
+        {% if task.category %}
+        <li>Category: {{ task.category }}</li>
+        {% endif %}
         {% if task.due_at %} 
         <li>Due at: {{ task.due_at }}</li>
         {% endif %}

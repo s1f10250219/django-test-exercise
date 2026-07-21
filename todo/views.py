@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import Http404
 from django.utils.timezone import make_aware
 from django.utils.dateparse import parse_datetime
+from django.db.models import Q
 from todo.models import Task
 
 
@@ -10,18 +11,25 @@ from todo.models import Task
 
 def index(request):
     if request.method == "POST":
+        due_at_value = request.POST.get("due_at")
+        due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
         task = Task(
-            title=request.POST["title"],
-            due_at=make_aware(parse_datetime(request.POST["due_at"])),
+            title=request.POST.get("title", ""),
+            category=request.POST.get("category", ""),
+            due_at=due_at,
         )
         task.save()
 
+    query = request.GET.get("q", "").strip()
     if request.GET.get("order") == "due":
         tasks = Task.objects.order_by("due_at")
     else:
         tasks = Task.objects.order_by("-posted_at")
 
-    context = {"tasks": tasks}
+    if query:
+        tasks = tasks.filter(Q(title__icontains=query) | Q(category__icontains=query))
+
+    context = {"tasks": tasks, "query": query}
     return render(request, "todo/index.html", context)
 
 def detail(request, task_id):
