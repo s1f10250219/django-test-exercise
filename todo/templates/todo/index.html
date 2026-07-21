@@ -30,7 +30,12 @@
 
     <div>
       <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
-      <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+      <a href="{% url 'index' %}?order=post">Sort by Posted Date</a> |
+      {% if show_completed %}
+      <a href="{% url 'index' %}{% if order %}?order={{ order }}{% endif %}">Hide Completed Tasks</a>
+      {% else %}
+      <a href="{% url 'index' %}?show_completed=1{% if order %}&order={{ order }}{% endif %}">Show Completed Tasks</a>
+      {% endif %}
     </div>
 
     {% for task in tasks %}
@@ -38,17 +43,33 @@
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
       <ul>
         <li>Posted at: {{ task.posted_at }}</li>
-        {% if task.due_at %} 
+        {% if task.due_at %}
         <li>Due at: {{ task.due_at }}</li>
         {% endif %}
-        {% if task.completed %} 
-        <li>Status: Completed</li>
-        {% else %}
         <li>Status: Not Completed</li>
-        {% endif %}
       </ul>
     </div>
+    {% empty %}
+    <p>No active tasks.</p>
     {% endfor %}
+
+    {% if show_completed %}
+    <h2>Completed Tasks</h2>
+    {% for task in completed_tasks %}
+    <div class="text completed">
+      <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
+      <ul>
+        <li>Posted at: {{ task.posted_at }}</li>
+        {% if task.completed_at %}
+        <li>Completed at: {{ task.completed_at }}</li>
+        {% endif %}
+        <li>Status: Completed</li>
+      </ul>
+    </div>
+    {% empty %}
+    <p>No completed tasks.</p>
+    {% endfor %}
+    {% endif %}
   </body>
 
 </html>
