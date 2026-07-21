@@ -6,9 +6,14 @@
     <title>To Do Application</title>
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
+    <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>{{ task.title }}</h1>
     <ul>
       <li>Posted at: {{ task.posted_at }}</li>
@@ -24,8 +29,7 @@
 
     <div>
       <a href="{% url 'index' %}">Top</a>
-      <a href="{% url 'delete' task.id %}">Delete</a>
-      <a href="{% url 'index' %}">Top</a> 
+      <a href="{% url 'delete' task.id %}">Delete</a> 
       | <a href="{% url 'update' task.id %}">Edit</a>
       <a href="{% url 'close' task.id %}">Close</a>
     </div>
