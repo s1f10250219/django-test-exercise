@@ -99,7 +99,21 @@ nav {
   margin-top: 1rem;
 }
 
-/* ダッシュボード用スタイル */
+nav a {
+  margin-right: 1rem;
+}
+
+.status-completed {
+  color: #16a34a;
+  font-weight: bold;
+}
+
+.status-pending {
+  color: #be123c;
+  font-weight: bold;
+}
+
+/* ダッシュボード用スタイル (9. 進捗状況表示) */
 .dashboard-header {
   max-width: 900px;
   margin: 0 auto;
@@ -374,18 +388,4 @@ footer {
     margin-top: 0.25rem;
     color: #2563eb;
   }
-}
-
-nav a {
-  margin-right: 1rem;
-}
-
-.status-completed {
-  color: #16a34a;
-  font-weight: bold;
-}
-
-.status-pending {
-  color: #be123c;
-  font-weight: bold;
 }
