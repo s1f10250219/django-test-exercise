@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import Http404
 from django.utils.timezone import make_aware
 from django.utils.dateparse import parse_datetime
+from django.core.paginator import Paginator
 from todo.models import Task
 
 
@@ -10,9 +11,11 @@ from todo.models import Task
 
 def index(request):
     if request.method == "POST":
+        due_at_value = request.POST.get("due_at")
+        due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
         task = Task(
-            title=request.POST["title"],
-            due_at=make_aware(parse_datetime(request.POST["due_at"])),
+            title=request.POST.get("title", ""),
+            due_at=due_at,
         )
         task.save()
 
@@ -21,7 +24,11 @@ def index(request):
     else:
         tasks = Task.objects.order_by("-posted_at")
 
-    context = {"tasks": tasks}
+    paginator = Paginator(tasks, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    context = {"tasks": page_obj}
     return render(request, "todo/index.html", context)
 
 def detail(request, task_id):
