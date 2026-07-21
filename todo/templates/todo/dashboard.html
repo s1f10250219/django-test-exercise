@@ -1,0 +1,133 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <title>Dashboard - To Do Application</title>
+    <meta charset="UTF-8">
+    <meta name="author" content="INIAD">
+    <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+  </head>
+
+  <body>
+    <div class="dashboard-header">
+      <h1>📊 ダッシュボード</h1>
+      <nav>
+        <a href="{% url 'index' %}" class="nav-link">← タスク一覧に戻る</a>
+      </nav>
+    </div>
+
+    <!-- 完了率セクション -->
+    <div class="dashboard-section">
+      <h2>📈 全体進捗状況</h2>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{{ total_count }}</div>
+          <div class="stat-label">総タスク数</div>
+        </div>
+        
+        <div class="stat-card completed">
+          <div class="stat-value">{{ completed_count }}</div>
+          <div class="stat-label">完了済み</div>
+        </div>
+        
+        <div class="stat-card uncompleted">
+          <div class="stat-value">{{ uncompleted_count }}</div>
+          <div class="stat-label">未完了</div>
+        </div>
+        
+        <div class="stat-card rate">
+          <div class="stat-value">{{ completion_rate }}%</div>
+          <div class="stat-label">完了率</div>
+        </div>
+      </div>
+
+      <!-- プログレスバー -->
+      <div class="progress-container">
+        <div class="progress-label">
+          <span>進捗: {{ completed_count }}/{{ total_count }}</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width: {{ completion_rate }}%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- タスク状態別セクション -->
+    <div class="dashboard-section">
+      <h2>⏰ タスク状態分析</h2>
+      
+      <div class="status-grid">
+        <!-- 期限切れタスク -->
+        <div class="status-card overdue">
+          <div class="status-icon">⚠️</div>
+          <div class="status-title">期限切れ</div>
+          <div class="status-count">{{ overdue_count }}</div>
+          {% if overdue_count > 0 %}
+            <div class="status-tasks">
+              {% for task in overdue_tasks %}
+                <div class="task-item">
+                  <a href="{% url 'detail' task.id %}">{{ task.title }}</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- 今週中の期限 -->
+        <div class="status-card upcoming">
+          <div class="status-icon">📅</div>
+          <div class="status-title">今週中の期限</div>
+          <div class="status-count">{{ upcoming_count }}</div>
+          {% if upcoming_count > 0 %}
+            <div class="status-tasks">
+              {% for task in upcoming_tasks %}
+                <div class="task-item">
+                  <a href="{% url 'detail' task.id %}">{{ task.title }}</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- 期限なしタスク -->
+        <div class="status-card no-deadline">
+          <div class="status-icon">📝</div>
+          <div class="status-title">期限なし</div>
+          <div class="status-count">{{ no_deadline_count }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 統計情報 -->
+    <div class="dashboard-section">
+      <h2>📋 統計情報</h2>
+      <div class="stats-info">
+        <div class="info-row">
+          <span class="info-label">完了ペース:</span>
+          <span class="info-value">
+            {% if total_count > 0 %}
+              {{ completed_count|floatformat:0 }}/{{ total_count }} ({{ completion_rate }}%)
+            {% else %}
+              タスクなし
+            {% endif %}
+          </span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">アクティブタスク:</span>
+          <span class="info-value">{{ uncompleted_count }} 件</span>
+        </div>
+        <div class="info-row">
+          <span class="info-label">要注意タスク:</span>
+          <span class="info-value">{{ overdue_count }} 件（期限切れ）+ {{ upcoming_count }} 件（今週中）</span>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <p class="footer-note">ダッシュボードは自動更新されます。定期的にご確認ください。</p>
+    </footer>
+  </body>
+
+</html>
