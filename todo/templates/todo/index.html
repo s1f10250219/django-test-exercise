@@ -35,6 +35,10 @@
         </select>
       </div>
       <div>
+        <label for="descriptionInput">Description</label><br>
+        <textarea id="descriptionInput" name="description" placeholder="Enter description or memo"></textarea>
+      </div>
+      <div>
         <label for="categoryInput">Categories</label><br>
         <select id="categoryInput" name="categories" multiple size="4">
           {% for category in categories %}
@@ -123,6 +127,9 @@
           <span class="tag">{{ category.name }}</span>
           {% endfor %}
         </li>
+        {% endif %}
+        {% if task.description %}
+        <li>Description: <span class="desc-preview">{{ task.description|truncatewords:15 }}</span></li>
         {% endif %}
         {% if task.completed %} 
         <li>Status: Completed</li>

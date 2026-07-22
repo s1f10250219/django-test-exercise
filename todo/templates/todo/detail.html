@@ -28,6 +28,11 @@
         {% endfor %}
       </li>
       {% endif %}
+      {% if task.description %}
+      <li>Description:<br>
+        <div class="description-text">{{ task.description }}</div>
+      </li>
+      {% endif %}
       {% if task.completed %}
       <li>Status: Completed</li>
       {% else %}

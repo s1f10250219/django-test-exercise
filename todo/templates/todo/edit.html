@@ -35,6 +35,10 @@
         </select>
       </div>
       <div>
+        <label for="descriptionInput">Description</label><br>
+        <textarea id="descriptionInput" name="description" placeholder="Enter description or memo">{{ task.description }}</textarea>
+      </div>
+      <div>
         <label for="categoryInput">Categories</label><br>
         <select id="categoryInput" name="categories" multiple size="4">
           {% for category in categories %}
