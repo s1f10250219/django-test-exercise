@@ -144,10 +144,25 @@ def test_index_search_by_title(self):
         self.assertEqual(response.status_code, 302)
         task.refresh_from_db()
         self.assertTrue(task.completed)
+        self.assertIsNotNone(task.completed_at)
 
     def test_close_fail(self):
         client = Client()
         response = client.get('/1/close')
+
+    def test_index_separates_completed_tasks(self):
+        completed_task = Task(title='completed task', completed=True, completed_at=timezone.now())
+        completed_task.save()
+        incomplete_task = Task(title='incomplete task')
+        incomplete_task.save()
+
+        client = Client()
+        response = client.get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(incomplete_task, response.context['tasks'])
+        self.assertIn(completed_task, response.context['completed_tasks'])
+
     def test_update_get(self):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()

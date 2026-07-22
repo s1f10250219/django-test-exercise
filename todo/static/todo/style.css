@@ -167,6 +167,11 @@ li {
   margin-bottom: 0.35rem;
 }
 
+.completed {
+  background: #f9fafb;
+  border-left: 4px solid #6b7280;
+}
+
 nav {
  
 

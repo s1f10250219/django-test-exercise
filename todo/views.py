@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
 from django.utils.timezone import make_aware
+from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
 from django.db.models import Case, IntegerField, When
@@ -40,6 +41,19 @@ from todo.models import Task, Category
 
 def index(request):
     if request.method == "POST":
+        due_value = request.POST.get("due_at")
+        task = Task(
+            title=request.POST["title"],
+            due_at=make_aware(parse_datetime(due_value)) if due_value else None,
+        )
+        task.save()
+
+    show_completed = request.GET.get("show_completed") == "1"
+    order = request.GET.get("order")
+
+    if order == "due":
+        tasks = Task.objects.filter(completed=False).order_by("due_at", "-posted_at")
+        completed_tasks = Task.objects.filter(completed=True).order_by("due_at", "-posted_at")
         due_at_value = request.POST.get("due_at")
         due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
         task = Task(
@@ -84,8 +98,14 @@ def index(request):
         tasks = Task.objects.order_by(priority_order, "-posted_at")
         tasks = tasks.order_by("due_at")
     else:
-        tasks = Task.objects.order_by("-posted_at")
+        tasks = Task.objects.filter(completed=False).order_by("-posted_at")
+        completed_tasks = Task.objects.filter(completed=True).order_by("-posted_at")
 
+    context = {
+        "tasks": tasks,
+        "completed_tasks": completed_tasks,
+        "show_completed": show_completed,
+        "order": order,
     # 検索機能による絞り込み
     if query:
         tasks = tasks.filter(Q(title__icontains=query) | Q(categories__name__icontains=query)).distinct()
@@ -170,6 +190,7 @@ def close(request, task_id):
     except Task.DoesNotExist:
         raise Http404("Task does not exist")
     task.completed = True
+    task.completed_at = timezone.now()
     task.save()
     return redirect('index')
 

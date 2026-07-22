@@ -35,6 +35,9 @@
       {% endif %}
       {% if task.completed %}
       <li>Status: Completed</li>
+      {% if task.completed_at %}
+      <li>Completed at: {{ task.completed_at }}</li>
+      {% endif %}
       {% else %}
       <li>Status: Not Completed</li>
       {% endif %}
