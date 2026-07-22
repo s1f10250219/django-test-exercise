@@ -88,3 +88,9 @@ def close(request, task_id):
     task.completed = True
     task.save()
     return redirect('index')
+
+def bulk_complete(request):
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).update(completed=True)
+    return redirect("todo:index")
