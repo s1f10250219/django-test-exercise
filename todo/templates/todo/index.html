@@ -45,7 +45,7 @@
       </div>
 
       {% for task in tasks %}
-      <div class="text" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+      <div class="text {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}" style="display: flex; align-items: flex-start; gap: 0.75rem;">
         <div style="margin-top: 0.5rem;">
           <input type="checkbox" name="task_ids" value="{{ task.id }}">
         </div>
@@ -54,7 +54,14 @@
           <ul>
             <li>Posted at: {{ task.posted_at }}</li>
             {% if task.due_at %}
-            <li>Due at: {{ task.due_at }}</li>
+            <li>
+              Due at: {{ task.due_at }}
+              {% if task.status == 'overdue' %}
+              <span class="alert-overdue">期限切れ</span>
+              {% elif task.status == 'urgent' %}
+              <span class="alert-urgent">期限間近</span>
+              {% endif %}
+            </li>
             {% endif %}
             {% if task.completed %}
             <li>Status: Completed</li>

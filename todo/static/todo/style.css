@@ -65,6 +65,34 @@ button:hover {
   background-color: #1d4ed8;
 }
 
+.status-overdue {
+  background: #fee2e2;
+  border-left: 4px solid #b91c1c;
+}
+
+.status-urgent {
+  background: #fef3c7;
+  border-left: 4px solid #d97706;
+}
+
+.alert-overdue {
+  background: #b91c1c;
+  color: #fff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
+.alert-urgent {
+  background: #d97706;
+  color: #fff;
+  padding: 0.15rem 0.4rem;
+  border-radius: 0.3rem;
+  font-size: 0.85rem;
+  margin-left: 0.5rem;
+}
+
 a {
   color: #2563eb;
   text-decoration: none;

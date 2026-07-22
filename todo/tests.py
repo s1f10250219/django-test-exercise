@@ -1,7 +1,8 @@
 from django.test import TestCase, Client
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 from todo.models import Task
+from todo.views import get_task_status
 
 
 # Create your tests here.
@@ -128,6 +129,21 @@ class TodoViewTestCase(TestCase):
         client = Client()
         response = client.get('/1/close')
         self.assertEqual(response.status_code, 404)
+
+    def test_get_task_status_urgent(self):
+        due = timezone.now() + timedelta(hours=12)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'urgent')
+
+    def test_get_task_status_overdue(self):
+        due = timezone.now() - timedelta(hours=1)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'overdue')
+
+    def test_get_task_status_normal(self):
+        due = timezone.now() + timedelta(days=2)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'normal')
 
     def test_bulk_complete(self):
         task1 = Task(title='task1', completed=False)
