@@ -11,86 +11,156 @@
   </head>
 
   <body>
-    <!-- テーマトグルボタン -->
+    <!-- テーマ切り替えボタン -->
     <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
-    
-    <h1>Sample To Do Application</h1>
-    <p>You can submit tasks from the following form.</p>
-    <form action="{% url 'index' %}" method="post">
-      {% csrf_token %}
-      <div>
-        <label for="titleInput">Title</label><br>
-        <input id="titleInput" name="title" type="text" placeholder="Input title">
-      </div>
-      <div>
-        <label for="dueInput">Due at:</label><br>
-        <input id="dueInput" name="due_at" type="datetime-local">
-      </div>
-      <div>
-        <label for="categoryInput">Categories</label><br>
-        <select id="categoryInput" name="categories" multiple size="4">
-          {% for category in categories %}
-          <option value="{{ category.name }}">{{ category.name }}</option>
-          {% endfor %}
-        </select>
-        <div class="form-help">複数選択できます</div>
-      </div>
-      <div>
-        <button type="submit">Submit</button>
-      </div>
-    </form>
-    <br>
 
-    <div class="filter-bar">
-      <form method="get" action="{% url 'index' %}" class="filter-form">
-        <label for="categoryFilter">Filter by category</label>
-        <select id="categoryFilter" name="category">
-          <option value="">All categories</option>
-          {% for category in categories %}
-          <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit">Filter</button>
+    <!-- メインコンテンツ全体を包むコンテナ -->
+    <main class="container">
+      <h1>ToDo アプリ</h1>
+      <p class="description">以下のフォームからタスクを追加できます。</p>
+      
+      {% if error_message %}
+      <p class="form-error">{{ error_message }}</p>
+      {% endif %}
+
+      <!-- タスク追加フォーム -->
+      <form action="{% url 'index' %}" method="post" class="add-form">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="titleInput">タイトル</label>
+          <input id="titleInput" name="title" type="text" placeholder="タイトルを入力">
+        </div>
+
+        <div class="form-group">
+          <label for="dueInput">期限</label>
+          <input id="dueInput" name="due_at" type="datetime-local">
+        </div>
+
+        <div class="form-group">
+          <label for="categoryInput">カテゴリ</label>
+          <select id="categoryInput" name="categories" multiple size="4">
+            {% for category in categories %}
+            <option value="{{ category.name }}">{{ category.name }}</option>
+            {% endfor %}
+          </select>
+          <div class="form-help">複数選択できます</div>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">追加</button>
+        </div>
       </form>
-      <div>
-        <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
-        <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
-      </div>
-    </div>
 
-    <form id="bulkForm" method="post">
-      {% csrf_token %}
-      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin: 1rem 0;">
-        <div style="margin-bottom: 0.5rem;">
-          <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
-          <label for="selectAll" style="margin-left: 0.5rem;">すべて選択</label>
+      <!-- フィルター・並べ替えバー -->
+      <div class="filter-bar">
+        <form method="get" action="{% url 'index' %}" class="filter-form">
+          <label for="categoryFilter">カテゴリで絞り込み</label>
+          <select id="categoryFilter" name="category">
+            <option value="">すべて</option>
+            {% for category in categories %}
+            <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="btn-secondary">絞り込み</button>
+        </form>
+
+        <div class="filter-links">
+          <a href="{% url 'index' %}?order=due">期限順に並べ替え</a> |
+          <a href="{% url 'index' %}?order=post">投稿順に並べ替え</a> |
+          {% if show_completed %}
+          <a href="{% url 'index' %}{% if order %}?order={{ order }}{% endif %}">完了済みを非表示</a>
+          {% else %}
+          <a href="{% url 'index' %}?show_completed=1{% if order %}&order={{ order }}{% endif %}">完了済みを表示</a>
+          {% endif %}
         </div>
-        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_complete' %}';">選択項目を完了にする</button>
-        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_delete' %}'; return confirm('本当に削除しますか？');" style="margin-left: 0.5rem;">選択項目を削除する</button>
       </div>
 
-      {% for task in tasks %}
-      <div class="text" style="display: flex; align-items: flex-start; gap: 0.75rem;">
-        <div style="margin-top: 0.5rem;">
-          <input type="checkbox" name="task_ids" value="{{ task.id }}">
+      <!-- タスク一覧・一括操作 -->
+      <form id="bulkForm" method="post">
+        {% csrf_token %}
+        <div class="bulk-panel">
+          <div class="bulk-select-all">
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+            <label for="selectAll">すべて選択</label>
+          </div>
+          <div class="bulk-buttons">
+            <button type="submit" class="btn-secondary" onclick="document.getElementById('bulkForm').action='{% url 'bulk_complete' %}';">選択項目を完了にする</button>
+            <button type="submit" class="btn-danger" onclick="document.getElementById('bulkForm').action='{% url 'bulk_delete' %}'; return confirm('本当に削除しますか？');">選択項目を削除する</button>
+          </div>
         </div>
-        <div style="flex: 1;">
+
+        {% for task in tasks %}
+        <div class="text task-card {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}">
+          <div class="task-check">
+            <input type="checkbox" name="task_ids" value="{{ task.id }}">
+          </div>
+          <div class="task-content">
+            <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
+            <ul>
+              <li>投稿日時: {{ task.posted_at }}</li>
+              {% if task.due_at %}
+              <li>
+                期限: {{ task.due_at }}
+                {% if task.status == 'overdue' %}
+                <span class="alert-overdue">期限切れ</span>
+                {% elif task.status == 'urgent' %}
+                <span class="alert-urgent">期限間近</span>
+                {% endif %}
+              </li>
+              {% endif %}
+              {% if task.categories.all %}
+              <li>
+                カテゴリ:
+                {% for category in task.categories.all %}
+                <span class="tag">{{ category.name }}</span>
+                {% endfor %}
+              </li>
+              {% endif %}
+              {% if task.completed %}
+              <li>状態: 完了</li>
+              {% else %}
+              <li>状態: 未完了</li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+        {% empty %}
+        <p class="empty-msg">タスクはまだありません。</p>
+        {% endfor %}
+      </form>
+
+      <!-- ページネーション -->
+      <div class="pagination">
+        {% if tasks.has_previous %}
+        <a href="{% url 'index' %}?page={{ tasks.previous_page_number }}">前へ</a>
+        {% endif %}
+        <span>ページ {{ tasks.number }} / {{ tasks.paginator.num_pages }}</span>
+        {% if tasks.has_next %}
+        <a href="{% url 'index' %}?page={{ tasks.next_page_number }}">次へ</a>
+        {% endif %}
+      </div>
+
+      <!-- 完了済みタスク（表示フラグ時） -->
+      {% if show_completed %}
+      <section class="completed-section">
+        <h2>完了済みタスク</h2>
+        {% for task in completed_tasks %}
+        <div class="text completed">
           <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
           <ul>
-            <li>Posted at: {{ task.posted_at }}</li>
-            {% if task.due_at %}
-            <li>Due at: {{ task.due_at }}</li>
+            <li>投稿日時: {{ task.posted_at }}</li>
+            {% if task.completed_at %}
+            <li>完了日時: {{ task.completed_at }}</li>
             {% endif %}
-            {% if task.completed %}
-            <li>Status: Completed</li>
-            {% else %}
-            <li>Status: Not Completed</li>
-            {% endif %}
+            <li>状態: 完了</li>
           </ul>
         </div>
-      </div>
-      {% endfor %}
-    </form>
+        {% empty %}
+        <p class="empty-msg">完了済みタスクはありません。</p>
+        {% endfor %}
+      </section>
+      {% endif %}
+    </main>
 
     <script>
       function toggleSelectAll(master) {
@@ -99,41 +169,6 @@
         });
       }
     </script>
-    {% for task in tasks %}
-    <div class="text">
-      <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
-      <ul>
-        <li>Posted at: {{ task.posted_at }}</li>
-        {% if task.due_at %} 
-        <li>Due at: {{ task.due_at }}</li>
-        {% endif %}
-        {% if task.categories.all %}
-        <li>Categories:
-          {% for category in task.categories.all %}
-          <span class="tag">{{ category.name }}</span>
-          {% endfor %}
-        </li>
-        {% endif %}
-        {% if task.completed %} 
-        <li>Status: Completed</li>
-        {% else %}
-        <li>Status: Not Completed</li>
-        {% endif %}
-      </ul>
-    </div>
-    {% empty %}
-    <p>No tasks found.</p>
-    {% endfor %}
-
-    <div class="pagination">
-      {% if tasks.has_previous %}
-      <a href="{% url 'index' %}?page={{ tasks.previous_page_number }}">Previous</a>
-      {% endif %}
-      <span>Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}</span>
-      {% if tasks.has_next %}
-      <a href="{% url 'index' %}?page={{ tasks.next_page_number }}">Next</a>
-      {% endif %}
-    </div>
   </body>
 
 </html>

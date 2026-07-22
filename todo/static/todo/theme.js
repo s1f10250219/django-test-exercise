@@ -1,33 +1,29 @@
 // ダークモード/ライトモード切り替え機能
 
 (function() {
-  // システムの設定を確認してテーマを初期化
   function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme) {
-      // 保存されたテーマがあればそれを使用
       applyTheme(savedTheme);
     } else if (prefersDark) {
-      // システム設定がダークモードの場合
       applyTheme('dark');
     } else {
-      // デフォルトはライトモード
       applyTheme('light');
     }
-    
-    // テーマトグルボタンを初期化
+
     initializeThemeToggle();
   }
-  
-  // テーマを適用
+
   function applyTheme(theme) {
     if (theme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
       document.documentElement.style.colorScheme = 'dark';
       localStorage.setItem('theme', 'dark');
       updateThemeToggleButton('dark');
     } else {
+      document.documentElement.setAttribute('data-theme', 'light');
       document.documentElement.style.colorScheme = 'light';
       localStorage.setItem('theme', 'light');
       updateThemeToggleButton('light');

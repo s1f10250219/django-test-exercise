@@ -3,7 +3,7 @@
 <html lang="ja">
 
   <head>
-    <title>To Do Application</title>
+    <title>To Do Application - {{ task.title }}</title>
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
@@ -14,31 +14,49 @@
     <!-- テーマトグルボタン -->
     <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
     
-    <h1>{{ task.title }}</h1>
-    <ul>
-      <li>Posted at: {{ task.posted_at }}</li>
-      {% if task.due_at %}
-      <li>Due at: {{ task.due_at }}</li>
-      {% endif %}
-      {% if task.categories.all %}
-      <li>Categories:
-        {% for category in task.categories.all %}
-        <span class="tag">{{ category.name }}</span>
-        {% endfor %}
-      </li>
-      {% endif %}
-      {% if task.completed %}
-      <li>Status: Completed</li>
-      {% else %}
-      <li>Status: Not Completed</li>
-      {% endif %}
-    </ul>
+    <!-- タスク詳細カード -->
+    <div class="text task-card-detail {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}">
+      <h1>{{ task.title }}</h1>
+      <ul>
+        <li>投稿日時: {{ task.posted_at }}</li>
+        {% if task.due_at %}
+        <li>
+          期限: {{ task.due_at }}
+          {% if task.status == 'overdue' %}
+          <span class="alert-overdue">期限切れ</span>
+          {% elif task.status == 'urgent' %}
+          <span class="alert-urgent">期限間近</span>
+          {% endif %}
+        </li>
+        {% endif %}
+        {% if task.categories.all %}
+        <li>カテゴリ:
+          {% for category in task.categories.all %}
+          <span class="tag">{{ category.name }}</span>
+          {% endfor %}
+        </li>
+        {% endif %}
+        {% if task.completed %}
+        <li>状態: <span class="badge-completed">完了</span></li>
+        {% if task.completed_at %}
+        <li>完了日時: {{ task.completed_at }}</li>
+        {% endif %}
+        {% else %}
+        <li>状態: <span class="badge-pending">未完了</span></li>
+        {% endif %}
+      </ul>
 
-    <div>
-      <a href="{% url 'index' %}">Top</a>
-      <a href="{% url 'delete' task.id %}">Delete</a> 
-      | <a href="{% url 'update' task.id %}">Edit</a>
-      <a href="{% url 'close' task.id %}">Close</a>
+      <!-- アクションエリア（編集・完了・削除など） -->
+      <div class="action-bar">
+        <a href="{% url 'index' %}" class="btn-secondary">← トップに戻る</a>
+        <div class="action-buttons">
+          {% if not task.completed %}
+          <a href="{% url 'close' task.id %}" class="btn-action btn-complete">完了にする</a>
+          {% endif %}
+          <a href="{% url 'update' task.id %}" class="btn-action btn-edit">編集</a>
+          <a href="{% url 'delete' task.id %}" class="btn-action btn-delete" onclick="return confirm('本当に削除しますか？');">削除</a>
+        </div>
+      </div>
     </div>
   </body>
 
