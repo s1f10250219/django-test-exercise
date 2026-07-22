@@ -7,9 +7,13 @@
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>Sample To Do Application</h1>
     <p>You can submit tasks from the following form.</p>
     <form action="{% url 'index' %}" method="post">
