@@ -5,7 +5,37 @@ from django.utils.dateparse import parse_datetime
 from django.db.models import Count, Q
 from datetime import timedelta
 from todo.models import Task
+from django.db.models import Q
+from django.db.models import Case, IntegerField, When
+from django.conf import settings
+import json
+import os
 from todo.models import Category, Task
+
+
+# File-backed descriptions to avoid DB migrations
+DESC_PATH = os.path.join(settings.BASE_DIR, 'todo', 'data', 'descriptions.json')
+
+
+def load_descriptions():
+    os.makedirs(os.path.dirname(DESC_PATH), exist_ok=True)
+    if not os.path.exists(DESC_PATH):
+        with open(DESC_PATH, 'w', encoding='utf-8') as f:
+            json.dump({}, f, ensure_ascii=False)
+    try:
+        with open(DESC_PATH, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception:
+        return {}
+
+
+def save_descriptions(data):
+    os.makedirs(os.path.dirname(DESC_PATH), exist_ok=True)
+    with open(DESC_PATH, 'w', encoding='utf-8') as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+from todo.models import Category, Task
+from django.core.paginator import Paginator
+from todo.models import Task, Category
 
 
 # Create your views here.
@@ -14,30 +44,74 @@ from todo.models import Category, Task
 def index(request):
     if request.method == "POST":
         due_at_value = request.POST.get("due_at")
+        due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
         task = Task(
             title=request.POST["title"],
             due_at=make_aware(parse_datetime(due_at_value)) if due_at_value else None,
+            priority=request.POST.get("priority", "medium"),
+            title=request.POST.get("title", ""),
+            due_at=due_at,
         )
         task.save()
 
         for category_name in request.POST.getlist("categories"):
             category, _ = Category.objects.get_or_create(name=category_name)
             task.categories.add(category)
+        # store description separately in JSON to avoid DB migration
+        desc = request.POST.get("description", "")
+        descriptions = load_descriptions()
+        descriptions[str(task.id)] = desc
+        save_descriptions(descriptions)
 
     selected_category = request.GET.get("category")
+    order = request.GET.get("order")
+    if order == "due":
+
+    # 検索クエリとカテゴリーの取得
+    query = request.GET.get("q", "").strip()
+    selected_category = request.GET.get("category")
+
+    # 並び替え
+    tasks = Task.objects.all()
 
     if request.GET.get("order") == "due":
         tasks = Task.objects.order_by("due_at")
+    elif order == "priority":
+        priority_order = Case(
+            When(priority="high", then=0),
+            When(priority="medium", then=1),
+            When(priority="low", then=2),
+            default=1,
+            output_field=IntegerField(),
+        )
+        tasks = Task.objects.order_by(priority_order, "-posted_at")
+        tasks = tasks.order_by("due_at")
     else:
         tasks = Task.objects.order_by("-posted_at")
 
+    # 検索機能による絞り込み
+    if query:
+        tasks = tasks.filter(Q(title__icontains=query) | Q(categories__name__icontains=query)).distinct()
+
+    # カテゴリー選択による絞り込み
+        tasks = tasks.order_by("-posted_at")
     if selected_category:
         tasks = tasks.filter(categories__name=selected_category).distinct()
+    # attach descriptions from file to task objects
+    descriptions = load_descriptions()
+    for t in tasks:
+        setattr(t, 'description', descriptions.get(str(t.id), ''))
+
+    # ページネーション処理
+    paginator = Paginator(tasks, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        "tasks": tasks,
+        "tasks": page_obj,
         "categories": Category.objects.order_by("name"),
         "selected_category": selected_category,
+        "query": query,
     }
     return render(request, "todo/index.html", context)
 
@@ -46,6 +120,8 @@ def detail(request, task_id):
         task = Task.objects.get(pk=task_id)
     except Task.DoesNotExist:
         raise Http404("Task does not exist")
+    descriptions = load_descriptions()
+    setattr(task, 'description', descriptions.get(str(task.id), ''))
 
     context = {"task": task}
     return render(request, "todo/detail.html", context)
@@ -56,6 +132,9 @@ def delete(request, task_id):
     except Task.DoesNotExist:
         raise Http404("Task does not exist")
     task.delete()
+    descriptions = load_descriptions()
+    descriptions.pop(str(task_id), None)
+    save_descriptions(descriptions)
     return redirect(index)
 
 def update(request, task_id):
@@ -67,12 +146,18 @@ def update(request, task_id):
         task.title = request.POST['title']
         due_at_value = request.POST.get('due_at')
         task.due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
+        task.priority = request.POST.get('priority', 'medium')
+        desc = request.POST.get('description', '')
         task.save()
 
         task.categories.clear()
         for category_name in request.POST.getlist('categories'):
             category, _ = Category.objects.get_or_create(name=category_name)
             task.categories.add(category)
+        # persist description separately
+        descriptions = load_descriptions()
+        descriptions[str(task.id)] = desc
+        save_descriptions(descriptions)
         return redirect(detail, task_id)
 
     context = {
@@ -142,24 +227,13 @@ def dashboard(request):
     return render(request, "todo/dashboard.html", context)
 
 def bulk_complete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).update(completed=True)
-
-    return redirect('index')
-
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).update(completed=True)
+    return redirect("todo:index")
 
 def bulk_delete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).delete()
-
-    return redirect('index')
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).delete()
+    return redirect("todo:index")

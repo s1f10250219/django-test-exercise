@@ -7,9 +7,13 @@
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>Sample To Do Application</h1>
     <p>You can submit tasks from the following form.</p>
     <form action="{% url 'index' %}" method="post">
@@ -19,8 +23,24 @@
         <input id="titleInput" name="title" type="text" placeholder="Input title">
       </div>
       <div>
+        <label for="categoryInput">Category</label><br>
+        <input id="categoryInput" name="category" type="text" placeholder="Input category">
+      </div>
+      <div>
         <label for="dueInput">Due at:</label><br>
         <input id="dueInput" name="due_at" type="datetime-local">
+      </div>
+      <div>
+        <label for="priorityInput">Priority</label><br>
+        <select id="priorityInput" name="priority">
+          <option value="high">高</option>
+          <option value="medium" selected>中</option>
+          <option value="low">低</option>
+        </select>
+      </div>
+      <div>
+        <label for="descriptionInput">Description</label><br>
+        <textarea id="descriptionInput" name="description" placeholder="Enter description or memo"></textarea>
       </div>
       <div>
         <label for="categoryInput">Categories</label><br>
@@ -42,6 +62,15 @@
       <a href="{% url 'index' %}?order=post">Sort by Posted Date</a> |
       <a href="{% url 'dashboard' %}">📊 Dashboard</a>
     <div class="filter-bar">
+<div class="filter-bar">
+      <!-- 検索フォーム -->
+      <form action="{% url 'index' %}" method="get" class="filter-form">
+        <label for="searchInput">Search</label>
+        <input id="searchInput" name="q" type="text" value="{{ query }}" placeholder="Search by title or category">
+        <button type="submit">Search</button>
+      </form>
+
+      <!-- カテゴリー絞り込みフォーム -->
       <form method="get" action="{% url 'index' %}" class="filter-form">
         <label for="categoryFilter">Filter by category</label>
         <select id="categoryFilter" name="category">
@@ -52,10 +81,16 @@
         </select>
         <button type="submit">Filter</button>
       </form>
+
+      <!-- ソートリンク（検索クエリ・カテゴリー保持対応） -->
       <div>
+        <a href="{% url 'index' %}?order=due{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Sort by Due Date</a> |
+        <a href="{% url 'index' %}?order=post{% if query %}&q={{ query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Sort by Posted Date</a>
+        <a href="{% url 'index' %}?order=priority">Sort by Priority</a> |
         <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
         <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
       </div>
+    </div>
     </div>
 
     <form id="bulkForm" method="post">
@@ -104,15 +139,22 @@
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
       <ul>
         <li>Posted at: {{ task.posted_at }}</li>
+        {% if task.category %}
+        <li>Category: {{ task.category }}</li>
+        {% endif %}
         {% if task.due_at %} 
         <li>Due at: {{ task.due_at }}</li>
         {% endif %}
+        <li>Priority: {{ task.get_priority_display }}</li>
         {% if task.categories.all %}
         <li>Categories:
           {% for category in task.categories.all %}
           <span class="tag">{{ category.name }}</span>
           {% endfor %}
         </li>
+        {% endif %}
+        {% if task.description %}
+        <li>Description: <span class="desc-preview">{{ task.description|truncatewords:15 }}</span></li>
         {% endif %}
         {% if task.completed %} 
         <li>Status: Completed</li>
@@ -121,7 +163,19 @@
         {% endif %}
       </ul>
     </div>
+    {% empty %}
+    <p>No tasks found.</p>
     {% endfor %}
+
+    <div class="pagination">
+      {% if tasks.has_previous %}
+      <a href="{% url 'index' %}?page={{ tasks.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span>Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}</span>
+      {% if tasks.has_next %}
+      <a href="{% url 'index' %}?page={{ tasks.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
   </body>
 
 </html>
