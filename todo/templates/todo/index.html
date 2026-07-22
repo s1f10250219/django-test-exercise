@@ -7,9 +7,13 @@
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>Sample To Do Application</h1>
     <p>You can submit tasks from the following form.</p>
     <form action="{% url 'index' %}" method="post">
@@ -23,16 +27,78 @@
         <input id="dueInput" name="due_at" type="datetime-local">
       </div>
       <div>
+        <label for="categoryInput">Categories</label><br>
+        <select id="categoryInput" name="categories" multiple size="4">
+          {% for category in categories %}
+          <option value="{{ category.name }}">{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">複数選択できます</div>
+      </div>
+      <div>
         <button type="submit">Submit</button>
       </div>
     </form>
     <br>
 
-    <div>
-      <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
-      <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+    <div class="filter-bar">
+      <form method="get" action="{% url 'index' %}" class="filter-form">
+        <label for="categoryFilter">Filter by category</label>
+        <select id="categoryFilter" name="category">
+          <option value="">All categories</option>
+          {% for category in categories %}
+          <option value="{{ category.name }}" {% if selected_category == category.name %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit">Filter</button>
+      </form>
+      <div>
+        <a href="{% url 'index' %}?order=due">Sort by Due Date</a> |
+        <a href="{% url 'index' %}?order=post">Sort by Posted Date</a>
+      </div>
     </div>
 
+    <form id="bulkForm" method="post">
+      {% csrf_token %}
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+        <div style="margin-bottom: 0.5rem;">
+          <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+          <label for="selectAll" style="margin-left: 0.5rem;">すべて選択</label>
+        </div>
+        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_complete' %}';">選択項目を完了にする</button>
+        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_delete' %}'; return confirm('本当に削除しますか？');" style="margin-left: 0.5rem;">選択項目を削除する</button>
+      </div>
+
+      {% for task in tasks %}
+      <div class="text" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+        <div style="margin-top: 0.5rem;">
+          <input type="checkbox" name="task_ids" value="{{ task.id }}">
+        </div>
+        <div style="flex: 1;">
+          <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
+          <ul>
+            <li>Posted at: {{ task.posted_at }}</li>
+            {% if task.due_at %}
+            <li>Due at: {{ task.due_at }}</li>
+            {% endif %}
+            {% if task.completed %}
+            <li>Status: Completed</li>
+            {% else %}
+            <li>Status: Not Completed</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      {% endfor %}
+    </form>
+
+    <script>
+      function toggleSelectAll(master) {
+        document.querySelectorAll('input[name="task_ids"]').forEach(function(checkbox) {
+          checkbox.checked = master.checked;
+        });
+      }
+    </script>
     {% for task in tasks %}
     <div class="text">
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
@@ -40,6 +106,13 @@
         <li>Posted at: {{ task.posted_at }}</li>
         {% if task.due_at %} 
         <li>Due at: {{ task.due_at }}</li>
+        {% endif %}
+        {% if task.categories.all %}
+        <li>Categories:
+          {% for category in task.categories.all %}
+          <span class="tag">{{ category.name }}</span>
+          {% endfor %}
+        </li>
         {% endif %}
         {% if task.completed %} 
         <li>Status: Completed</li>

@@ -7,9 +7,13 @@
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>Edit task</h1>
     <p>You can edit tasks from the following form.</p>
     <form action="{% url 'update' task.id%}" method="post">
@@ -21,6 +25,15 @@
       <div>
         <label for="dueInput">Due at:</label><br>
         <input id="dueInput" name="due_at" type="datetime-local" value="{{ task.due_at |date:"Y-m-d H:i" }}">
+      </div>
+      <div>
+        <label for="categoryInput">Categories</label><br>
+        <select id="categoryInput" name="categories" multiple size="4">
+          {% for category in categories %}
+          <option value="{{ category.name }}" {% if category.name in selected_categories %}selected{% endif %}>{{ category.name }}</option>
+          {% endfor %}
+        </select>
+        <div class="form-help">複数選択できます</div>
       </div>
       <div>
         <button type="submit">Submit</button>
