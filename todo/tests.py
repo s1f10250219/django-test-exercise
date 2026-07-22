@@ -99,6 +99,16 @@ class TodoViewTestCase(TestCase):
         self.assertEqual(response.context["tasks"][0], task1)
         self.assertEqual(response.context["tasks"][1], task2)
 
+def test_index_search_by_title(self):
+        Task(title="Alpha task", due_at=timezone.make_aware(datetime(2024, 7, 1))).save()
+        Task(title="Beta task", due_at=timezone.make_aware(datetime(2024, 8, 1))).save()
+        client = Client()
+        response = client.get("/?q=alpha")
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["tasks"].count(), 1)
+        self.assertEqual(response.context["tasks"][0].title, "Alpha task")
+
     def test_index_pagination(self):
         for index in range(15):
             Task(title=f"task{index}", due_at=timezone.make_aware(datetime(2024, 7, 1))).save()

@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import Http404
 from django.utils.timezone import make_aware
 from django.utils.dateparse import parse_datetime
+from django.db.models import Q
 from django.db.models import Case, IntegerField, When
 from django.conf import settings
 import json
@@ -63,8 +64,11 @@ def index(request):
     order = request.GET.get("order")
     if order == "due":
 
+    # 検索クエリとカテゴリーの取得
+    query = request.GET.get("q", "").strip()
     selected_category = request.GET.get("category")
 
+    # 並び替え
     tasks = Task.objects.all()
 
     if request.GET.get("order") == "due":
@@ -80,6 +84,13 @@ def index(request):
         tasks = Task.objects.order_by(priority_order, "-posted_at")
         tasks = tasks.order_by("due_at")
     else:
+        tasks = Task.objects.order_by("-posted_at")
+
+    # 検索機能による絞り込み
+    if query:
+        tasks = tasks.filter(Q(title__icontains=query) | Q(categories__name__icontains=query)).distinct()
+
+    # カテゴリー選択による絞り込み
         tasks = tasks.order_by("-posted_at")
     if selected_category:
         tasks = tasks.filter(categories__name=selected_category).distinct()
@@ -88,6 +99,7 @@ def index(request):
     for t in tasks:
         setattr(t, 'description', descriptions.get(str(t.id), ''))
 
+    # ページネーション処理
     paginator = Paginator(tasks, 10)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -96,6 +108,7 @@ def index(request):
         "tasks": page_obj,
         "categories": Category.objects.order_by("name"),
         "selected_category": selected_category,
+        "query": query,
     }
     return render(request, "todo/index.html", context)
 
