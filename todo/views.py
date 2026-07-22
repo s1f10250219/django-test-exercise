@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.http import Http404
+from django.utils.timezone import make_aware, now
 from django.utils.timezone import make_aware
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
@@ -37,6 +38,18 @@ from todo.models import Task, Category
 
 
 # Create your views here.
+
+def get_task_status(task):
+    if task.due_at is None or task.completed:
+        return 'normal'
+
+    time_until_due = task.due_at - now()
+
+    if time_until_due.total_seconds() < 0:
+        return 'overdue'
+    if time_until_due.total_seconds() < 86400:
+        return 'urgent'
+    return 'normal'
 
 
 def index(request):
@@ -101,6 +114,10 @@ def index(request):
         tasks = Task.objects.filter(completed=False).order_by("-posted_at")
         completed_tasks = Task.objects.filter(completed=True).order_by("-posted_at")
 
+    for task in tasks:
+        task.status = get_task_status(task)
+
+    context = {"tasks": tasks}
     context = {
         "tasks": tasks,
         "completed_tasks": completed_tasks,
