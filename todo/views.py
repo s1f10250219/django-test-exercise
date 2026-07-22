@@ -1,6 +1,6 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import Http404
-from django.utils.timezone import make_aware, now
+from django.utils.timezone import make_aware, now, is_aware
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.core.paginator import Paginator
@@ -21,6 +21,16 @@ def get_task_status(task):
     return 'normal'
 
 
+def parse_due_at(due_at_value):
+    """日時文字列を安全に aware な datetime に変換するヘルパー関数"""
+    if not due_at_value:
+        return None
+    parsed_dt = parse_datetime(due_at_value)
+    if parsed_dt and not is_aware(parsed_dt):
+        return make_aware(parsed_dt)
+    return parsed_dt
+
+
 def index(request):
     error_message = None
     if request.method == "POST":
@@ -29,7 +39,8 @@ def index(request):
             error_message = "タイトルを入力してください。"
         else:
             due_at_value = request.POST.get("due_at")
-            due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
+            due_at = parse_due_at(due_at_value)
+            
             task = Task(
                 title=title,
                 due_at=due_at,
@@ -37,10 +48,14 @@ def index(request):
             task.save()
 
             for category_name in request.POST.getlist("categories"):
+                category_name = category_name.strip()
                 if not category_name:
                     continue
                 category, _ = Category.objects.get_or_create(name=category_name)
                 task.categories.add(category)
+
+            # POST成功後は二重送信防止のためリダイレクト
+            return redirect('index')
 
     selected_category = request.GET.get("category")
     show_completed = request.GET.get("show_completed") == "1"
@@ -78,29 +93,20 @@ def index(request):
 
 
 def detail(request, task_id):
-    try:
-        task = Task.objects.get(pk=task_id)
-    except Task.DoesNotExist:
-        raise Http404("Task does not exist")
-
+    task = get_object_or_404(Task, pk=task_id)
     context = {"task": task}
     return render(request, "todo/detail.html", context)
 
 
 def delete(request, task_id):
-    try:
-        task = Task.objects.get(pk=task_id)
-    except Task.DoesNotExist:
-        raise Http404("Task does not exist")
+    task = get_object_or_404(Task, pk=task_id)
     task.delete()
-    return redirect(index)
+    return redirect('index')
 
 
 def update(request, task_id):
-    try:
-        task = Task.objects.get(pk=task_id)
-    except Task.DoesNotExist:
-        raise Http404("Task does not exist")
+    task = get_object_or_404(Task, pk=task_id)
+
     if request.method == 'POST':
         title = request.POST.get('title', '').strip()
         if not title:
@@ -114,16 +120,17 @@ def update(request, task_id):
 
         task.title = title
         due_at_value = request.POST.get('due_at')
-        task.due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
+        task.due_at = parse_due_at(due_at_value)
         task.save()
 
         task.categories.clear()
         for category_name in request.POST.getlist('categories'):
+            category_name = category_name.strip()
             if not category_name:
                 continue
             category, _ = Category.objects.get_or_create(name=category_name)
             task.categories.add(category)
-        return redirect(detail, task_id)
+        return redirect('detail', task_id=task.id)
 
     context = {
         'task': task,
@@ -134,11 +141,7 @@ def update(request, task_id):
 
 
 def close(request, task_id):
-    try:
-        task = Task.objects.get(pk=task_id)
-    except Task.DoesNotExist:
-        raise Http404("Task does not exist")
-
+    task = get_object_or_404(Task, pk=task_id)
     task.completed = True
     task.completed_at = timezone.now()
     task.save()
