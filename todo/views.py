@@ -2,7 +2,6 @@ from django.shortcuts import render, redirect
 from django.http import Http404
 from django.utils.timezone import make_aware
 from django.utils.dateparse import parse_datetime
-from django.db.models import Case, IntegerField, When
 from todo.models import Category, Task
 
 
@@ -15,7 +14,6 @@ def index(request):
         task = Task(
             title=request.POST["title"],
             due_at=make_aware(parse_datetime(due_at_value)) if due_at_value else None,
-            priority=request.POST.get("priority", "medium"),
         )
         task.save()
 
@@ -24,23 +22,13 @@ def index(request):
             task.categories.add(category)
 
     selected_category = request.GET.get("category")
-    order = request.GET.get("order")
-    if order == "due":
+
+    tasks = Task.objects.all()
 
     if request.GET.get("order") == "due":
-        tasks = Task.objects.order_by("due_at")
-    elif order == "priority":
-        priority_order = Case(
-            When(priority="high", then=0),
-            When(priority="medium", then=1),
-            When(priority="low", then=2),
-            default=1,
-            output_field=IntegerField(),
-        )
-        tasks = Task.objects.order_by(priority_order, "-posted_at")
+        tasks = tasks.order_by("due_at")
     else:
-        tasks = Task.objects.order_by("-posted_at")
-
+        tasks = tasks.order_by("-posted_at")
     if selected_category:
         tasks = tasks.filter(categories__name=selected_category).distinct()
 
@@ -77,7 +65,6 @@ def update(request, task_id):
         task.title = request.POST['title']
         due_at_value = request.POST.get('due_at')
         task.due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
-        task.priority = request.POST.get('priority', 'medium')
         task.save()
 
         task.categories.clear()
@@ -100,28 +87,4 @@ def close(request, task_id):
         raise Http404("Task does not exist")
     task.completed = True
     task.save()
-    return redirect('index')
-
-
-def bulk_complete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).update(completed=True)
-
-    return redirect('index')
-
-
-def bulk_delete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).delete()
-
     return redirect('index')
