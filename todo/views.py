@@ -94,3 +94,9 @@ def bulk_complete(request):
         task_ids = request.POST.getlist("task_ids")
         Task.objects.filter(id__in=task_ids).update(completed=True)
     return redirect("todo:index")
+
+def bulk_delete(request):
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).delete()
+    return redirect("todo:index")
