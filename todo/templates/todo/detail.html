@@ -7,17 +7,37 @@
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
+    <script src="{% static 'todo/theme.js' %}"></script>
   </head>
 
   <body>
+    <!-- テーマトグルボタン -->
+    <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
+    
     <h1>{{ task.title }}</h1>
     <ul>
       <li>Posted at: {{ task.posted_at }}</li>
       {% if task.due_at %}
       <li>Due at: {{ task.due_at }}</li>
       {% endif %}
+      <li>Priority: {{ task.get_priority_display }}</li>
+      {% if task.categories.all %}
+      <li>Categories:
+        {% for category in task.categories.all %}
+        <span class="tag">{{ category.name }}</span>
+        {% endfor %}
+      </li>
+      {% endif %}
+      {% if task.description %}
+      <li>Description:<br>
+        <div class="description-text">{{ task.description }}</div>
+      </li>
+      {% endif %}
       {% if task.completed %}
       <li>Status: Completed</li>
+      {% if task.completed_at %}
+      <li>Completed at: {{ task.completed_at }}</li>
+      {% endif %}
       {% else %}
       <li>Status: Not Completed</li>
       {% endif %}

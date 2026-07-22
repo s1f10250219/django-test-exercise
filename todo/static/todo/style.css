@@ -1,10 +1,47 @@
 /* Basic styles for ToDo application */
+
+/* CSS変数でカラースキームを定義 */
+:root {
+  /* ライトモードのカラー */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f9fafb;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-tertiary: #374151;
+  --border-color: #e5e7eb;
+  --border-light: #d1d5db;
+  --shadow-light: rgba(15, 23, 42, 0.05);
+  --shadow-medium: rgba(15, 23, 42, 0.1);
+  --shadow-dark: rgba(15, 23, 42, 0.15);
+  --color-info: #2563eb;
+  --color-info-hover: #1d4ed8;
+}
+
+/* ダークモード */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-tertiary: #334155;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-tertiary: #94a3b8;
+    --border-color: #334155;
+    --border-light: #475569;
+    --shadow-light: rgba(0, 0, 0, 0.2);
+    --shadow-medium: rgba(0, 0, 0, 0.3);
+    --shadow-dark: rgba(0, 0, 0, 0.4);
+  }
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  background-color: #f8fafc;
-  color: #111827;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
   margin: 0;
   padding: 0;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html {
@@ -18,20 +55,23 @@ body > div, body > h1, form {
 }
 
 h1 {
-  color: #111827;
+  color: var(--text-primary);
   margin-top: 1.5rem;
+  transition: color 0.3s ease;
 }
 
 p {
-  color: #4b5563;
+  color: var(--text-secondary);
+  transition: color 0.3s ease;
 }
 
 form {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
   border-radius: 10px;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+  box-shadow: 0 1px 2px var(--shadow-light);
   padding: 1.25rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 label {
@@ -41,28 +81,38 @@ label {
 }
 
 input[type="text"],
-input[type="datetime-local"] {
+input[type="datetime-local"],
+textarea,
+select {
   width: 100%;
   padding: 0.75rem 0.85rem;
-  border: 1px solid #d1d5db;
+  border: 1px solid var(--border-light);
   border-radius: 0.55rem;
-  background: #f9fafb;
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
   margin-bottom: 1rem;
   box-sizing: border-box;
+  font-family: inherit;
 }
 
-button {
-  background-color: #2563eb;
+textarea {
+  resize: vertical;
+  min-height: 100px;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+var(--color-info);
   color: #ffffff;
   border: none;
   border-radius: 0.65rem;
   padding: 0.85rem 1.3rem;
   cursor: pointer;
   font-weight: 700;
+  transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 button:hover {
-  background-color: #1d4ed8;
+  background-color: var(--color-info-hover);
+  transform: translateY(-2px);
 }
 
 .status-overdue {
@@ -95,11 +145,34 @@ button:hover {
 
 a {
   color: #2563eb;
+button:active {
+  transform: translateY(0)
+  border: none;
+  border-radius: 0.65rem;
+  padding: 0.85rem 1.3rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+var(--color-info);
   text-decoration: none;
+  transition: color 0.3s ease;
 }
 
 a:hover {
   text-decoration: underline;
+  opacity: 0.8
+  color: #2563eb;
+  text-decoratvar(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 1px 3px var(--shadow-light);
+}
+
+.text:hover {
+  box-shadow: 0 4px 6px var(--shadow-medium)on: underline;
 }
 
 .text {
@@ -108,7 +181,8 @@ a:hover {
   border-radius: 10px;
   margin-bottom: 1rem;
   padding: 1rem;
-}
+}var(--text-tertiary);
+  transition: color 0.3s ease
 
 .text h2 {
   margin-top: 0;
@@ -123,8 +197,43 @@ li {
   margin-bottom: 0.35rem;
 }
 
+.completed {
+  background: #f9fafb;
+  border-left: 4px solid #6b7280;
+}
+
 nav {
-  margin-top: 1rem;
+ 
+
+/* テーマトグルボタン */
+.theme-toggle {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px var(--shadow-medium);
+  z-index: 1000;
+}
+
+.theme-toggle:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px var(--shadow-dark);
+}
+
+.theme-toggle:active {
+  transform: scale(0.95);
+} margin-top: 1rem;
 }
 
 nav a {
@@ -139,4 +248,56 @@ nav a {
 .status-pending {
   color: #be123c;
   font-weight: bold;
+}
+
+.filter-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem auto;
+  max-width: 900px;
+  padding: 0 1rem;
+}
+
+.filter-form {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.filter-form select {
+  width: auto;
+  min-width: 180px;
+  margin-bottom: 0;
+}
+
+.tag {
+  display: inline-block;
+  background: #dbeafe;
+  color: #1d4ed8;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  margin-right: 0.35rem;
+}
+
+.form-help {
+  color: #6b7280;
+  font-size: 0.9rem;
+  margin-top: -0.75rem;
+  margin-bottom: 1rem;
+}
+
+.description-text {
+  background: #f3f4f6;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.desc-preview {
+  color: #6b7280;
+  font-style: italic;
 }
