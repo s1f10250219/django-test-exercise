@@ -25,11 +25,12 @@ def index(request):
 
     selected_category = request.GET.get("category")
 
-    if request.GET.get("order") == "due":
-        tasks = Task.objects.order_by("due_at")
-    else:
-        tasks = Task.objects.order_by("-posted_at")
+    tasks = Task.objects.all()
 
+    if request.GET.get("order") == "due":
+        tasks = tasks.order_by("due_at")
+    else:
+        tasks = tasks.order_by("-posted_at")
     if selected_category:
         tasks = tasks.filter(categories__name=selected_category).distinct()
 
@@ -94,26 +95,14 @@ def close(request, task_id):
     task.save()
     return redirect('index')
 
-
 def bulk_complete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).update(completed=True)
-
-    return redirect('index')
-
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).update(completed=True)
+    return redirect("todo:index")
 
 def bulk_delete(request):
-    try:
-        task_ids = request.POST.getlist('task_ids')
-    except AttributeError:
-        task_ids = []
-
-    if task_ids:
-        Task.objects.filter(pk__in=task_ids).delete()
-
-    return redirect('index')
+    if request.method == "POST":
+        task_ids = request.POST.getlist("task_ids")
+        Task.objects.filter(id__in=task_ids).delete()
+    return redirect("todo:index")
