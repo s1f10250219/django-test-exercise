@@ -63,6 +63,47 @@
       </div>
     </div>
 
+    <form id="bulkForm" method="post">
+      {% csrf_token %}
+      <div style="background: #ffffff; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin: 1rem 0;">
+        <div style="margin-bottom: 0.5rem;">
+          <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+          <label for="selectAll" style="margin-left: 0.5rem;">すべて選択</label>
+        </div>
+        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_complete' %}';">選択項目を完了にする</button>
+        <button type="submit" onclick="document.getElementById('bulkForm').action='{% url 'bulk_delete' %}'; return confirm('本当に削除しますか？');" style="margin-left: 0.5rem;">選択項目を削除する</button>
+      </div>
+
+      {% for task in tasks %}
+      <div class="text" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+        <div style="margin-top: 0.5rem;">
+          <input type="checkbox" name="task_ids" value="{{ task.id }}">
+        </div>
+        <div style="flex: 1;">
+          <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
+          <ul>
+            <li>Posted at: {{ task.posted_at }}</li>
+            {% if task.due_at %}
+            <li>Due at: {{ task.due_at }}</li>
+            {% endif %}
+            {% if task.completed %}
+            <li>Status: Completed</li>
+            {% else %}
+            <li>Status: Not Completed</li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+      {% endfor %}
+    </form>
+
+    <script>
+      function toggleSelectAll(master) {
+        document.querySelectorAll('input[name="task_ids"]').forEach(function(checkbox) {
+          checkbox.checked = master.checked;
+        });
+      }
+    </script>
     {% for task in tasks %}
     <div class="text">
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>

@@ -26,6 +26,8 @@ def index(request):
     selected_category = request.GET.get("category")
     order = request.GET.get("order")
     if order == "due":
+
+    if request.GET.get("order") == "due":
         tasks = Task.objects.order_by("due_at")
     elif order == "priority":
         priority_order = Case(
@@ -98,4 +100,28 @@ def close(request, task_id):
         raise Http404("Task does not exist")
     task.completed = True
     task.save()
+    return redirect('index')
+
+
+def bulk_complete(request):
+    try:
+        task_ids = request.POST.getlist('task_ids')
+    except AttributeError:
+        task_ids = []
+
+    if task_ids:
+        Task.objects.filter(pk__in=task_ids).update(completed=True)
+
+    return redirect('index')
+
+
+def bulk_delete(request):
+    try:
+        task_ids = request.POST.getlist('task_ids')
+    except AttributeError:
+        task_ids = []
+
+    if task_ids:
+        Task.objects.filter(pk__in=task_ids).delete()
+
     return redirect('index')
