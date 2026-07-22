@@ -48,7 +48,8 @@
 
         <div class="form-actions">
           <button type="submit" class="btn-primary">更新</button>
-          <a href="{% url 'index' %}" class="btn-link">キャンセル</a>
+          <!-- 詳細ページへ戻るリンク -->
+          <a href="{% url 'detail' task.id %}" class="btn-link">キャンセル</a>
         </div>
       </form>
     </main>

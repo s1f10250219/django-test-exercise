@@ -3,7 +3,7 @@
 <html lang="ja">
 
   <head>
-    <title>To Do Application - {{ task.title }}</title>
+    <title>{{ task.title }} - To Do Application</title>
     <meta charset="UTF-8">
     <meta name="author" content="INIAD">
     <link rel="stylesheet" href="{% static 'todo/style.css' %}">
@@ -11,53 +11,66 @@
   </head>
 
   <body>
-    <!-- テーマトグルボタン -->
+    <!-- テーマ切り替えボタン -->
     <button id="theme-toggle" class="theme-toggle" title="テーマを切り替え">🌙</button>
-    
-    <!-- タスク詳細カード -->
-    <div class="text task-card-detail {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}">
-      <h1>{{ task.title }}</h1>
-      <ul>
-        <li>投稿日時: {{ task.posted_at }}</li>
-        {% if task.due_at %}
-        <li>
-          期限: {{ task.due_at }}
-          {% if task.status == 'overdue' %}
-          <span class="alert-overdue">期限切れ</span>
-          {% elif task.status == 'urgent' %}
-          <span class="alert-urgent">期限間近</span>
-          {% endif %}
-        </li>
-        {% endif %}
-        {% if task.categories.all %}
-        <li>カテゴリ:
-          {% for category in task.categories.all %}
-          <span class="tag">{{ category.name }}</span>
-          {% endfor %}
-        </li>
-        {% endif %}
-        {% if task.completed %}
-        <li>状態: <span class="badge-completed">完了</span></li>
-        {% if task.completed_at %}
-        <li>完了日時: {{ task.completed_at }}</li>
-        {% endif %}
-        {% else %}
-        <li>状態: <span class="badge-pending">未完了</span></li>
-        {% endif %}
-      </ul>
 
-      <!-- アクションエリア（編集・完了・削除など） -->
-      <div class="action-bar">
-        <a href="{% url 'index' %}" class="btn-secondary">← トップに戻る</a>
-        <div class="action-buttons">
-          {% if not task.completed %}
-          <a href="{% url 'close' task.id %}" class="btn-action btn-complete">完了にする</a>
-          {% endif %}
-          <a href="{% url 'update' task.id %}" class="btn-action btn-edit">編集</a>
-          <a href="{% url 'delete' task.id %}" class="btn-action btn-delete" onclick="return confirm('本当に削除しますか？');">削除</a>
+    <!-- メインコンテンツ全体を包むコンテナ -->
+    <main class="container">
+      <h1>タスクの詳細</h1>
+      <p class="description">タスクの詳細情報です。</p>
+
+      {% if error_message %}
+      <p class="form-error">{{ error_message }}</p>
+      {% endif %}
+
+      <!-- タスク詳細カード -->
+      <div class="text task-card {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}">
+        <div class="task-content">
+          <h2>{{ task.title }}</h2>
+          <ul>
+            <li>投稿日時: {{ task.posted_at }}</li>
+            {% if task.due_at %}
+            <li>
+              期限: {{ task.due_at }}
+              {% if task.status == 'overdue' %}
+              <span class="alert-overdue">期限切れ</span>
+              {% elif task.status == 'urgent' %}
+              <span class="alert-urgent">期限間近</span>
+              {% endif %}
+            </li>
+            {% endif %}
+            {% if task.categories.all %}
+            <li>
+              カテゴリ:
+              {% for category in task.categories.all %}
+              <span class="tag">{{ category.name }}</span>
+              {% endfor %}
+            </li>
+            {% endif %}
+            {% if task.completed %}
+            <li>状態: 完了 {% if task.completed_at %}(完了日時: {{ task.completed_at }}){% endif %}</li>
+            {% else %}
+            <li>状態: 未完了</li>
+            {% endif %}
+          </ul>
         </div>
       </div>
-    </div>
+
+      <!-- 操作ボタンエリア（編集ページへの遷移リンク・削除・戻る） -->
+      <div class="form-actions" style="margin-top: 1.5rem;">
+        <!-- 編集ページへ飛ぶボタン -->
+        <a href="{% url 'update' task.id %}" class="btn-primary">タスクを編集する</a>
+        
+        <!-- 削除フォーム（必要な場合） -->
+        <form action="{% url 'delete' task.id %}" method="post" style="display: inline; margin: 0; padding: 0; background: none; border: none; box-shadow: none;">
+          {% csrf_token %}
+          <button type="submit" class="btn-danger" onclick="return confirm('本当にこのタスクを削除しますか？');">削除</button>
+        </form>
+
+        <!-- 一覧へ戻る -->
+        <a href="{% url 'index' %}" class="btn-link">一覧に戻る</a>
+      </div>
+    </main>
   </body>
 
 </html>
