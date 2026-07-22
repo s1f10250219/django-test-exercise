@@ -23,11 +23,12 @@ def index(request):
 
     selected_category = request.GET.get("category")
 
-    if request.GET.get("order") == "due":
-        tasks = Task.objects.order_by("due_at")
-    else:
-        tasks = Task.objects.order_by("-posted_at")
+    tasks = Task.objects.all()
 
+    if request.GET.get("order") == "due":
+        tasks = tasks.order_by("due_at")
+    else:
+        tasks = tasks.order_by("-posted_at")
     if selected_category:
         tasks = tasks.filter(categories__name=selected_category).distinct()
 
