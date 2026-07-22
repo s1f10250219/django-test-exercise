@@ -62,6 +62,11 @@
       <a href="{% url 'index' %}?order=post">Sort by Posted Date</a> |
       <a href="{% url 'dashboard' %}">📊 Dashboard</a>
     <div class="filter-bar">
+      {% if show_completed %}
+      <a href="{% url 'index' %}{% if order %}?order={{ order }}{% endif %}">Hide Completed Tasks</a>
+      {% else %}
+      <a href="{% url 'index' %}?show_completed=1{% if order %}&order={{ order }}{% endif %}">Show Completed Tasks</a>
+      {% endif %}
 <div class="filter-bar">
       <!-- 検索フォーム -->
       <form action="{% url 'index' %}" method="get" class="filter-form">
@@ -105,7 +110,7 @@
       </div>
 
       {% for task in tasks %}
-      <div class="text" style="display: flex; align-items: flex-start; gap: 0.75rem;">
+      <div class="text {% if task.status == 'overdue' %}status-overdue{% elif task.status == 'urgent' %}status-urgent{% endif %}" style="display: flex; align-items: flex-start; gap: 0.75rem;">
         <div style="margin-top: 0.5rem;">
           <input type="checkbox" name="task_ids" value="{{ task.id }}">
         </div>
@@ -114,7 +119,14 @@
           <ul>
             <li>Posted at: {{ task.posted_at }}</li>
             {% if task.due_at %}
-            <li>Due at: {{ task.due_at }}</li>
+            <li>
+              Due at: {{ task.due_at }}
+              {% if task.status == 'overdue' %}
+              <span class="alert-overdue">期限切れ</span>
+              {% elif task.status == 'urgent' %}
+              <span class="alert-urgent">期限間近</span>
+              {% endif %}
+            </li>
             {% endif %}
             {% if task.completed %}
             <li>Status: Completed</li>
@@ -139,6 +151,9 @@
       <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
       <ul>
         <li>Posted at: {{ task.posted_at }}</li>
+        {% if task.due_at %}
+        <li>Due at: {{ task.due_at }}</li>
+        {% endif %}
         {% if task.category %}
         <li>Category: {{ task.category }}</li>
         {% endif %}
@@ -160,10 +175,29 @@
         <li>Status: Completed</li>
         {% else %}
         <li>Status: Not Completed</li>
-        {% endif %}
       </ul>
     </div>
     {% empty %}
+    <p>No active tasks.</p>
+    {% endfor %}
+
+    {% if show_completed %}
+    <h2>Completed Tasks</h2>
+    {% for task in completed_tasks %}
+    <div class="text completed">
+      <h2><a href="{% url 'detail' task.id %}">{{ task.title }}</a></h2>
+      <ul>
+        <li>Posted at: {{ task.posted_at }}</li>
+        {% if task.completed_at %}
+        <li>Completed at: {{ task.completed_at }}</li>
+        {% endif %}
+        <li>Status: Completed</li>
+      </ul>
+    </div>
+    {% empty %}
+    <p>No completed tasks.</p>
+    {% endfor %}
+    {% endif %}
     <p>No tasks found.</p>
     {% endfor %}
 

@@ -1,7 +1,8 @@
 from django.test import TestCase, Client
 from django.utils import timezone
-from datetime import datetime
+from datetime import datetime, timedelta
 from todo.models import Task
+from todo.views import get_task_status
 
 
 # Create your tests here.
@@ -144,10 +145,25 @@ def test_index_search_by_title(self):
         self.assertEqual(response.status_code, 302)
         task.refresh_from_db()
         self.assertTrue(task.completed)
+        self.assertIsNotNone(task.completed_at)
 
     def test_close_fail(self):
         client = Client()
         response = client.get('/1/close')
+
+    def test_index_separates_completed_tasks(self):
+        completed_task = Task(title='completed task', completed=True, completed_at=timezone.now())
+        completed_task.save()
+        incomplete_task = Task(title='incomplete task')
+        incomplete_task.save()
+
+        client = Client()
+        response = client.get('/')
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(incomplete_task, response.context['tasks'])
+        self.assertIn(completed_task, response.context['completed_tasks'])
+
     def test_update_get(self):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
@@ -192,6 +208,21 @@ def test_index_search_by_title(self):
         client = Client()
         response = client.get('/1/close')
         self.assertEqual(response.status_code, 404)
+
+    def test_get_task_status_urgent(self):
+        due = timezone.now() + timedelta(hours=12)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'urgent')
+
+    def test_get_task_status_overdue(self):
+        due = timezone.now() - timedelta(hours=1)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'overdue')
+
+    def test_get_task_status_normal(self):
+        due = timezone.now() + timedelta(days=2)
+        task = Task(title='task1', due_at=due, completed=False)
+        self.assertEqual(get_task_status(task), 'normal')
 
     def test_bulk_complete(self):
         task1 = Task(title='task1', completed=False)
