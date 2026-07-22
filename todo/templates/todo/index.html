@@ -121,7 +121,19 @@
         {% endif %}
       </ul>
     </div>
+    {% empty %}
+    <p>No tasks found.</p>
     {% endfor %}
+
+    <div class="pagination">
+      {% if tasks.has_previous %}
+      <a href="{% url 'index' %}?page={{ tasks.previous_page_number }}">Previous</a>
+      {% endif %}
+      <span>Page {{ tasks.number }} of {{ tasks.paginator.num_pages }}</span>
+      {% if tasks.has_next %}
+      <a href="{% url 'index' %}?page={{ tasks.next_page_number }}">Next</a>
+      {% endif %}
+    </div>
   </body>
 
 </html>
