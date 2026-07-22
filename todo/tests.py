@@ -98,7 +98,6 @@ class TodoViewTestCase(TestCase):
         self.assertEqual(response.templates[0].name, "todo/index.html")
         self.assertEqual(response.context["tasks"][0], task1)
         self.assertEqual(response.context["tasks"][1], task2)
-
     def test_detail_get_success(self):
         task = Task(title='task1', due_at=timezone.make_aware(datetime(2024, 7, 1)))
         task.save()
@@ -161,4 +160,40 @@ class TodoViewTestCase(TestCase):
         client = Client()
         response = client.get('/1/delete')
         self.assertEqual(response.status_code, 404)
+        response = client.get('/{}/close'.format(task.pk))
+
+        self.assertEqual(response.status_code, 302)
+        task.refresh_from_db()
+        self.assertTrue(task.completed)
+
+    def test_close_fail(self):
+        client = Client()
+        response = client.get('/1/close')
+        self.assertEqual(response.status_code, 404)
+
+    def test_bulk_complete(self):
+        task1 = Task(title='task1', completed=False)
+        task1.save()
+        task2 = Task(title='task2', completed=False)
+        task2.save()
+        client = Client()
+        response = client.post('/bulk_complete/', {'task_ids': [task1.id, task2.id]})
+
+        self.assertEqual(response.status_code, 302)
+        task1.refresh_from_db()
+        task2.refresh_from_db()
+        self.assertTrue(task1.completed)
+        self.assertTrue(task2.completed)
+
+    def test_bulk_delete(self):
+        task1 = Task(title='task1')
+        task1.save()
+        task2 = Task(title='task2')
+        task2.save()
+        client = Client()
+        response = client.post('/bulk_delete/', {'task_ids': [task1.id, task2.id]})
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(Task.objects.filter(pk=task1.id).exists())
+        self.assertFalse(Task.objects.filter(pk=task2.id).exists())
 

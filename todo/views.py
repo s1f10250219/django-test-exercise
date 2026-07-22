@@ -5,6 +5,7 @@ from django.utils.dateparse import parse_datetime
 from django.db.models import Count, Q
 from datetime import timedelta
 from todo.models import Task
+from todo.models import Category, Task
 
 
 # Create your views here.
@@ -12,18 +13,32 @@ from todo.models import Task
 
 def index(request):
     if request.method == "POST":
+        due_at_value = request.POST.get("due_at")
         task = Task(
             title=request.POST["title"],
-            due_at=make_aware(parse_datetime(request.POST["due_at"])),
+            due_at=make_aware(parse_datetime(due_at_value)) if due_at_value else None,
         )
         task.save()
+
+        for category_name in request.POST.getlist("categories"):
+            category, _ = Category.objects.get_or_create(name=category_name)
+            task.categories.add(category)
+
+    selected_category = request.GET.get("category")
 
     if request.GET.get("order") == "due":
         tasks = Task.objects.order_by("due_at")
     else:
         tasks = Task.objects.order_by("-posted_at")
 
-    context = {"tasks": tasks}
+    if selected_category:
+        tasks = tasks.filter(categories__name=selected_category).distinct()
+
+    context = {
+        "tasks": tasks,
+        "categories": Category.objects.order_by("name"),
+        "selected_category": selected_category,
+    }
     return render(request, "todo/index.html", context)
 
 def detail(request, task_id):
@@ -50,12 +65,20 @@ def update(request, task_id):
         raise Http404("Task does not exist")
     if request.method == 'POST':
         task.title = request.POST['title']
-        task.due_at = make_aware(parse_datetime(request.POST['due_at']))
+        due_at_value = request.POST.get('due_at')
+        task.due_at = make_aware(parse_datetime(due_at_value)) if due_at_value else None
         task.save()
+
+        task.categories.clear()
+        for category_name in request.POST.getlist('categories'):
+            category, _ = Category.objects.get_or_create(name=category_name)
+            task.categories.add(category)
         return redirect(detail, task_id)
 
     context = {
-        'task': task
+        'task': task,
+        'categories': Category.objects.order_by('name'),
+        'selected_categories': list(task.categories.values_list('name', flat=True)),
     }
     return render(request, "todo/edit.html", context)
 
@@ -117,3 +140,26 @@ def dashboard(request):
         'upcoming_tasks': upcoming_tasks,
     }
     return render(request, "todo/dashboard.html", context)
+
+def bulk_complete(request):
+    try:
+        task_ids = request.POST.getlist('task_ids')
+    except AttributeError:
+        task_ids = []
+
+    if task_ids:
+        Task.objects.filter(pk__in=task_ids).update(completed=True)
+
+    return redirect('index')
+
+
+def bulk_delete(request):
+    try:
+        task_ids = request.POST.getlist('task_ids')
+    except AttributeError:
+        task_ids = []
+
+    if task_ids:
+        Task.objects.filter(pk__in=task_ids).delete()
+
+    return redirect('index')
