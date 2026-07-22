@@ -25,6 +25,8 @@ urlpatterns = [
     path('<int:task_id>/delete', todo_views.delete, name='delete'),
     path('<int:task_id>/update', todo_views.update, name='update'),
     path('<int:task_id>/close', todo_views.close, name='close'),
+    path('bulk_complete/', todo_views.bulk_complete, name='bulk_complete'),
+    path('bulk_delete/', todo_views.bulk_delete, name='bulk_delete'),
 ]
 
 
